@@ -7,18 +7,75 @@
 //
 
 import UIKit
+import CoreLocation
+class ViewController: UIViewController, CLLocationManagerDelegate {
 
-class ViewController: UIViewController {
+    @IBOutlet weak var latitud: UILabel!
+    @IBOutlet weak var longitud: UILabel!
+    @IBOutlet weak var exactitud: UILabel!
+    @IBOutlet weak var nortMagnetico: UILabel!
+    @IBOutlet weak var norteGeografico: UILabel!
 
+    private let manejador = CLLocationManager()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        manejador.delegate = self
+//        manejador.desiredAccuracy = kCLLocationAccuracyBest
+//        if (manejador.respondsToSelector(Selector("requestWhenInUseAuthorization"))) {
+//            manejador.requestWhenInUseAuthorization()
+//        } else {
+//            manejador.startUpdatingLocation()
+//        }
+        
+        manejador.requestWhenInUseAuthorization()
+        print("Ingresando a la aplicación")
+    
     }
+    
+    
+    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        print("\(status)")
+        print("\(status.rawValue)")
+        if status == .AuthorizedWhenInUse || status == .AuthorizedAlways{
+            manejador.startUpdatingLocation()
+            manejador.startUpdatingHeading()
+            print("Se tiene autorización")
+        }else{
+            print("No se tiene autorización")
+            manejador.stopUpdatingLocation()
+            manejador.stopUpdatingHeading()
+        }
+    }
+    
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]){
+        print("Actualizando la localización")
+        latitud.text = String(manager.location!.coordinate.latitude)
+        longitud.text = String(manager.location!.coordinate.longitude)
+        exactitud.text = String(manager.location!.horizontalAccuracy)
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
+    
+    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+        let alerta = UIAlertController(title: "ERROR", message: "erro \(error.code)", preferredStyle: .Alert)
+        let accionOK = UIAlertAction(title: "OK", style: .Default, handler:
+            {accion in
+            // alguna accion aqui
+            })
+        alerta.addAction(accionOK)
+        self.presentViewController(alerta, animated: true, completion: nil)
+        
+    }
+    
+    func locationManager(manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        nortMagnetico.text = String(newHeading.magneticHeading)
+        norteGeografico.text = String(newHeading.trueHeading)
+    }
+    
+    
+    
+
 
 
 }
